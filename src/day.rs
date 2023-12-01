@@ -49,7 +49,7 @@ pub trait Day<'a> {
             );
             let input = reqwest::blocking::Client::new()
                 .get(format!(
-                    "https://adventofcode.com/2022/day/{}/input",
+                    "https://adventofcode.com/2023/day/{}/input",
                     Self::DAY
                 ))
                 .header(COOKIE, cookie)

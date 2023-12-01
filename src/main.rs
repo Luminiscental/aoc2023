@@ -2,6 +2,32 @@ mod day;
 
 use day::Day;
 
+#[macro_export]
+macro_rules! bench_day {
+    ($day:literal) => {
+        paste::paste! {
+            #[cfg(not(debug_assertions))]
+            #[cfg(test)]
+            mod [<bench_day $day>] {
+                use $crate::day::Day;
+                use super::*;
+                use test::Bencher;
+
+                #[bench]
+                fn [<bench_day $day _overall>] (b: &mut Bencher) {
+                    let input = [<Day $day>]::get_input().unwrap();
+                    b.iter(|| {
+                        let input = [<Day $day>]::parse(&input);
+                        let (input, part1) = [<Day $day>]::solve_part1(input);
+                        let part2 = [<Day $day>]::solve_part2(input);
+                        (part1, part2)
+                    })
+                }
+            }
+        }
+    };
+}
+
 macro_rules! import_days {
     ($day:literal) => {
         paste::paste! {
