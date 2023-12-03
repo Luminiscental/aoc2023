@@ -1,4 +1,5 @@
 mod day;
+mod util;
 
 use day::Day;
 
@@ -64,5 +65,5 @@ macro_rules! declare_main {
 }
 
 declare_main!(
-    01, 02
+    01, 02, 03
 );

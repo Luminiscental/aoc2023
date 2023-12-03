@@ -35,7 +35,7 @@ fn first_last_digits(string: &str, allow_words: bool) -> Option<u32> {
     Some(first? * 10 + last?)
 }
 
-pub struct Day01 {}
+pub struct Day01;
 
 impl<'a> Day<'a> for Day01 {
     const DAY: usize = 1;

@@ -12,7 +12,7 @@ fn three_le(a: [u32; 3], b: [u32; 3]) -> bool {
     (0..3).all(|i| a[i] <= b[i])
 }
 
-pub struct Day02 {}
+pub struct Day02;
 
 impl<'a> Day<'a> for Day02 {
     const DAY: usize = 2;
