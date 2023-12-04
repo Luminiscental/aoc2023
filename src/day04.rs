@@ -28,7 +28,8 @@ impl<'a> Day<'a> for Day04 {
             .collect::<Vec<_>>();
         let ans = wins
             .iter()
-            .map(|&n| (n > 0).then(|| 1 << (n - 1)).unwrap_or(0))
+            .filter(|&&n| n > 0)
+            .map(|n| 1 << (n - 1))
             .sum::<usize>();
         (wins, ans.to_string())
     }
