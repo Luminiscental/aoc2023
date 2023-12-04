@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::day::Day;
 
 pub struct Day04;
@@ -7,46 +5,43 @@ pub struct Day04;
 impl<'a> Day<'a> for Day04 {
     const DAY: usize = 4;
 
-    type Input = HashMap<usize, (Vec<u32>, Vec<u32>)>;
-    type ProcessedInput = HashMap<usize, usize>;
+    type Input = Vec<(Vec<u32>, Vec<u32>)>;
+    type ProcessedInput = Vec<usize>;
 
     fn parse(input: &'a str) -> Self::Input {
         input
             .trim()
             .lines()
             .map(|line| {
-                let (card_id, content) = line.split_once(':').unwrap();
-                let (_card, id) = card_id.trim().split_once(' ').unwrap();
+                let (_card, content) = line.split_once(':').unwrap();
                 let (win, have) = content.trim().split_once('|').unwrap();
                 let get_nums = |s: &str| s.split_whitespace().map(|n| n.parse().unwrap()).collect();
-                (id.trim().parse().unwrap(), (get_nums(win), get_nums(have)))
+                (get_nums(win), get_nums(have))
             })
             .collect()
     }
 
     fn solve_part1(input: Self::Input) -> (Self::ProcessedInput, String) {
-        let wins: HashMap<_, _> = input
+        let wins = input
             .into_iter()
-            .map(|(card, (win, have))| (card, have.iter().filter(|n| win.contains(n)).count()))
-            .collect();
+            .map(|(win, have)| have.iter().filter(|n| win.contains(n)).count())
+            .collect::<Vec<_>>();
         let ans = wins
-            .values()
+            .iter()
             .map(|&n| (n > 0).then(|| 1 << (n - 1)).unwrap_or(0))
             .sum::<usize>();
         (wins, ans.to_string())
     }
 
     fn solve_part2(wins: Self::ProcessedInput) -> String {
-        let mut copies: HashMap<usize, usize> = wins.keys().map(|&c| (c, 1)).collect();
-        let mut done: HashMap<usize, usize> = HashMap::new();
-        while !copies.is_empty() {
-            let (&card, &n) = copies.iter().next().unwrap();
-            let count = wins.get(&card).unwrap();
-            (card + 1..=card + count).for_each(|c| *copies.entry(c).or_insert(0) += n);
-            *done.entry(card).or_insert(0) += n;
-            copies.remove(&card);
+        let mut copies = vec![1; wins.len()];
+        let mut done = vec![0; wins.len()];
+        while let Some(card) = (0..copies.len()).find(|&i| copies[i] > 0) {
+            (card + 1..=card + wins[card]).for_each(|c| copies[c] += copies[card]);
+            done[card] += copies[card];
+            copies[card] = 0;
         }
-        done.values().sum::<usize>().to_string()
+        done.into_iter().sum::<usize>().to_string()
     }
 }
 
