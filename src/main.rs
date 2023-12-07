@@ -65,5 +65,5 @@ macro_rules! declare_main {
 }
 
 declare_main!(
-    01, 02, 03, 04, 05, 06
+    01, 02, 03, 04, 05, 06, 07
 );
