@@ -14,21 +14,17 @@ fn hand_values(hand: &str) -> [usize; 5] {
     [val(bs[0]), val(bs[1]), val(bs[2]), val(bs[3]), val(bs[4])]
 }
 
-fn hand_strength(mut values: [usize; 5], with_jokers: bool) -> usize {
-    if with_jokers {
-        if let Some(i) = values.iter().position(|&v| v == 0) {
-            return (1..15)
-                .map(|v| {
-                    values[i] = v;
-                    hand_strength(values, with_jokers)
-                })
-                .max()
-                .unwrap();
-        }
-    }
+fn hand_strength(values: [usize; 5], with_jokers: bool) -> usize {
     let mut counts = [0; 15];
     (0..5).for_each(|i| counts[values[i]] += 1);
+    let js = counts[0];
+    if with_jokers {
+        counts[0] = 0;
+    }
     counts.sort_unstable();
+    if with_jokers {
+        counts[14] += js;
+    }
     match counts[14] {
         n if n > 3 => n + 1,
         3 if counts[13] == 2 => 4,
