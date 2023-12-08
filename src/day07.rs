@@ -4,7 +4,7 @@ use crate::day::Day;
 
 fn hand_values(hand: &str) -> [usize; 5] {
     let val = |c: u8| {
-        "0123456789TJQKA"
+        "23456789TJQKA"
             .as_bytes()
             .iter()
             .position(|&b| b == c)
@@ -72,7 +72,7 @@ impl<'a> Day<'a> for Day07 {
     }
 
     fn solve_part2(mut input: Self::ProcessedInput) -> String {
-        let joker_val = |n: usize| match n.cmp(&11) {
+        let joker_val = |n: usize| match n.cmp(&9) {
             Ordering::Greater => n,
             Ordering::Equal => 0,
             Ordering::Less => n + 1,
