@@ -9,6 +9,17 @@ pub struct Input {
     map: HashMap<[u8; 3], [[u8; 3]; 2]>,
 }
 
+fn steps_until<P: Fn([u8; 3]) -> bool>(input: &Input, start: [u8; 3], pred: P) -> usize {
+    let mut node = start;
+    for (i, &lr) in input.instr.iter().cycle().enumerate() {
+        if pred(node) {
+            return i;
+        }
+        node = input.map.get(&node).unwrap()[lr];
+    }
+    unreachable!()
+}
+
 pub struct Day08;
 
 impl<'a> Day<'a> for Day08 {
@@ -34,38 +45,16 @@ impl<'a> Day<'a> for Day08 {
     }
 
     fn solve_part1(input: Self::Input) -> (Self::ProcessedInput, String) {
-        let mut node = [b'A'; 3];
-        let mut steps = 0;
-        for (i, &lr) in input.instr.iter().cycle().enumerate() {
-            if node == [b'Z'; 3] {
-                steps = i;
-                break;
-            }
-            node = input.map.get(&node).unwrap()[lr];
-        }
-        (input, steps.to_string())
+        let ans = steps_until(&input, [b'A'; 3], |n| n == [b'Z'; 3]);
+        (input, ans.to_string())
     }
 
     fn solve_part2(input: Self::ProcessedInput) -> String {
-        let cycles = input.map.keys().filter(|n| n[2] == b'A').map(|&n| {
-            let mut node = n;
-            let mut period = 0;
-            let mut first = None;
-            for (i, &lr) in input.instr.iter().cycle().enumerate() {
-                if node[2] == b'Z' {
-                    if let Some(j) = first {
-                        assert_eq!(i, 2 * j);
-                        period = j;
-                        break;
-                    } else {
-                        first = Some(i);
-                    }
-                }
-                node = input.map.get(&node).unwrap()[lr];
-            }
-            period
-        });
-        cycles.into_iter().fold(1, integer::lcm).to_string()
+        let ns = input.map.keys().filter(|n| n[2] == b'A');
+        // assumes __A -> __Z -> __Z both paths same length & instructions loop
+        ns.map(|&n| steps_until(&input, n, |n| n[2] == b'Z'))
+            .fold(1, integer::lcm)
+            .to_string()
     }
 }
 
