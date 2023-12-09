@@ -1,18 +1,14 @@
 use crate::day::Day;
 
-fn extrapolate(ns: &[i32]) -> (i32, i32) {
-    let mut ends = Vec::new();
-    let mut scratch = ns.to_vec();
-    while scratch.iter().any(|&n| n != 0) {
-        let first = scratch[0];
-        for i in 0..scratch.len() - 1 {
-            scratch[i] = scratch[i + 1] - scratch[i];
-        }
-        ends.push((first, scratch.pop().unwrap()));
+fn extrapolate(ns: &mut [i32]) -> (i32, i32) {
+    if ns.iter().copied().all(|n| n == 0) {
+        (0, 0)
+    } else {
+        let (first, last_idx) = (ns[0], ns.len() - 1);
+        (0..last_idx).for_each(|i| ns[i] = ns[i + 1] - ns[i]);
+        let above = extrapolate(&mut ns[..last_idx]);
+        (first - above.0, ns[last_idx] + above.1)
     }
-    ends.into_iter()
-        .rev()
-        .fold((0, 0), |acc, e| (e.0 - acc.0, acc.1 + e.1))
 }
 
 pub struct Day09;
@@ -21,7 +17,7 @@ impl<'a> Day<'a> for Day09 {
     const DAY: usize = 9;
 
     type Input = Vec<Vec<i32>>;
-    type ProcessedInput = Vec<(i32, i32)>;
+    type ProcessedInput = i32;
 
     fn parse(input: &'a str) -> Self::Input {
         input
@@ -36,13 +32,15 @@ impl<'a> Day<'a> for Day09 {
     }
 
     fn solve_part1(input: Self::Input) -> (Self::ProcessedInput, String) {
-        let ends = input.iter().map(|ns| extrapolate(ns)).collect::<Vec<_>>();
-        let ans = ends.iter().map(|e| e.1).sum::<i32>();
-        (ends, ans.to_string())
+        let (p2, p1) = input
+            .into_iter()
+            .map(|mut ns| extrapolate(&mut ns))
+            .fold((0, 0), |a, b| (a.0 + b.0, a.1 + b.1));
+        (p2, p1.to_string())
     }
 
-    fn solve_part2(input: Self::ProcessedInput) -> String {
-        input.iter().map(|e| e.0).sum::<i32>().to_string()
+    fn solve_part2(p2: Self::ProcessedInput) -> String {
+        p2.to_string()
     }
 }
 
