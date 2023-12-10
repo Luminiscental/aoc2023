@@ -18,6 +18,15 @@ impl<'a> LineGrid<'a> {
         }
     }
 
+    pub fn get(&self, row: i32, col: i32) -> Option<char> {
+        let (w, h) = (
+            self.width.try_into().unwrap(),
+            self.height().try_into().unwrap(),
+        );
+        (row >= 0 && col >= 0 && row < h && col < w)
+            .then(|| self.lines[row as usize][col as usize] as char)
+    }
+
     pub fn width(&self) -> usize {
         self.width
     }
