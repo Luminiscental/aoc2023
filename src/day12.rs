@@ -1,35 +1,38 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, iter};
+
+use itertools::{intersperse, Itertools};
 
 use crate::day::Day;
 
-fn count_configurations(row: &[u8], groups: &[usize]) -> usize {
-    if groups.is_empty() {
-        return 1;
-    }
-    if row.len() < groups[0] {
-        return 0;
-    }
-    let mut nexts: HashMap<usize, usize> = HashMap::new();
-    for i in 0..row.len() - groups[0] + 1 {
-        if (i..i + groups[0]).any(|j| row[j] == b'.')
-            || (i > 0 && row[i - 1] == b'#')
-            || (i + groups[0] < row.len() && row[i + groups[0]] == b'#')
-        {
-            continue;
+fn count(row: &[u8], groups: &[usize], memo: &mut HashMap<(Vec<u8>, Vec<usize>), usize>) -> usize {
+    let k = (row.to_vec(), groups.to_vec());
+    memo.get(&k).copied().unwrap_or_else(|| {
+        if groups.is_empty() {
+            return row.iter().copied().all(|c| c != b'#') as usize;
         }
-        let mut j = i + groups[0];
-        if j < row.len() && row[j] == b'?' {
-            j += 1;
+        if row.len() < groups[0] {
+            return 0;
         }
-        while j < row.len() && row[j] == b'.' {
-            j += 1;
+        let mut nexts: HashMap<usize, usize> = HashMap::new();
+        for i in 0..row.len() - groups[0] + 1 {
+            let (end, len) = (i + groups[0], row.len());
+            if i > 0 && row[i - 1] == b'#' {
+                break;
+            }
+            if (i..end).any(|j| row[j] == b'.') || (end < len && row[end] == b'#') {
+                continue;
+            }
+            let j = end + (end < len && row[end] == b'?') as usize;
+            let j = (j..len).find(|&j| row[j] != b'.').unwrap_or(len);
+            *nexts.entry(j).or_default() += 1;
         }
-        *nexts.entry(j).or_default() += 1;
-    }
-    nexts
-        .into_iter()
-        .map(|(j, n)| n * count_configurations(&row[j..], &groups[1..]))
-        .sum()
+        let result = nexts
+            .into_iter()
+            .map(|(j, n)| n * count(&row[j..], &groups[1..], memo))
+            .sum();
+        memo.insert(k, result);
+        result
+    })
 }
 
 pub struct Day12;
@@ -55,13 +58,22 @@ impl<'a> Day<'a> for Day12 {
     fn solve_part1(input: Self::Input) -> (Self::ProcessedInput, String) {
         let ans = input
             .iter()
-            .map(|(r, g)| count_configurations(r, g))
+            .map(move |(r, g)| count(r, g, &mut HashMap::new()))
             .sum::<usize>();
         (input, ans.to_string())
     }
 
     fn solve_part2(input: Self::ProcessedInput) -> String {
-        "".to_string()
+        let mut memo = HashMap::new();
+        input
+            .into_iter()
+            .map(move |(r, g)| {
+                let r5 = intersperse(iter::repeat(r.to_vec()).take(5), vec![b'?']);
+                let g5 = iter::repeat(g).take(5);
+                count(&r5.concat(), &g5.concat(), &mut memo)
+            })
+            .sum::<usize>()
+            .to_string()
     }
 }
 
@@ -85,6 +97,6 @@ mod test_day12 {
         let (input, part1) = Day12::solve_part1(input);
         let part2 = Day12::solve_part2(input);
         assert_eq!(part1, "21");
-        assert_eq!(part2, "");
+        assert_eq!(part2, "525152");
     }
 }
