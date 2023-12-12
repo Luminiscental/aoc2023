@@ -4,16 +4,16 @@ use itertools::{intersperse, Itertools};
 
 use crate::day::Day;
 
-fn count(row: &[u8], groups: &[usize], memo: &mut HashMap<(Vec<u8>, Vec<usize>), usize>) -> usize {
+fn count(row: &[u8], groups: &[usize], memo: &mut HashMap<(Vec<u8>, Vec<usize>), u64>) -> u64 {
     let k = (row.to_vec(), groups.to_vec());
     memo.get(&k).copied().unwrap_or_else(|| {
         if groups.is_empty() {
-            return row.iter().copied().all(|c| c != b'#') as usize;
+            return row.iter().copied().all(|c| c != b'#') as u64;
         }
         if row.len() < groups[0] {
             return 0;
         }
-        let mut nexts: HashMap<usize, usize> = HashMap::new();
+        let mut nexts: HashMap<usize, u64> = HashMap::new();
         for i in 0..row.len() - groups[0] + 1 {
             let (end, len) = (i + groups[0], row.len());
             if i > 0 && row[i - 1] == b'#' {
@@ -59,7 +59,7 @@ impl<'a> Day<'a> for Day12 {
         let ans = input
             .iter()
             .map(move |(r, g)| count(r, g, &mut HashMap::new()))
-            .sum::<usize>();
+            .sum::<u64>();
         (input, ans.to_string())
     }
 
@@ -72,7 +72,7 @@ impl<'a> Day<'a> for Day12 {
                 let g5 = iter::repeat(g).take(5);
                 count(&r5.concat(), &g5.concat(), &mut memo)
             })
-            .sum::<usize>()
+            .sum::<u64>()
             .to_string()
     }
 }
