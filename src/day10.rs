@@ -5,7 +5,7 @@ use crate::{day::Day, util::LineGrid};
 fn step(grid: &LineGrid<'_>, pos: &mut (i32, i32), dir: (i32, i32)) -> Option<(i32, i32)> {
     pos.0 += dir.0;
     pos.1 += dir.1;
-    match grid.get(pos.0, pos.1) {
+    match grid.try_get(pos.0, pos.1) {
         Some('S') => Some(dir),
         Some('|') if dir.1 == 0 => Some(dir),
         Some('-') if dir.0 == 0 => Some(dir),
@@ -69,7 +69,7 @@ impl<'a> Day<'a> for Day10 {
             let mut inside = false;
             for c in 0..input.width() as i32 {
                 if pipes.contains(&(r, c)) {
-                    match input.get(r, c) {
+                    match input.try_get(r, c) {
                         Some('|') | Some('L') | Some('J') => inside = !inside,
                         Some('S') if start_is_ilj => inside = !inside,
                         _ => (),

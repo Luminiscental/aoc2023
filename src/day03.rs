@@ -32,7 +32,11 @@ impl<'a> Day<'a> for Day03 {
         let mut numbers = HashMap::new();
         for i in 0..input.height() {
             let mut start = None;
-            for (j, c) in input.iter_row(i).chain(iter::once((input.width(), '.'))) {
+            for (j, c) in input
+                .iter_row(i)
+                .enumerate()
+                .chain(iter::once((input.width(), '.')))
+            {
                 if c.is_ascii_digit() {
                     start = start.or(Some(j));
                 } else if let Some(k) = start {

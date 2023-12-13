@@ -50,10 +50,10 @@ impl<'a, const N: u64> Day<'a> for Day11Generic<N> {
             .filter_map(|(r, c, ch)| (ch == '#').then_some((r, c)))
             .collect::<Vec<_>>();
         let mut empty_rows = (0..input.height())
-            .filter(|&r| input.iter_row(r).all(|(_, c)| c == '.'))
+            .filter(|&r| input.iter_row(r).all(|c| c == '.'))
             .collect::<Vec<_>>();
         let mut empty_cols = (0..input.width())
-            .filter(|&c| (0..input.height()).all(|r| input.get(r as i32, c as i32) == Some('.')))
+            .filter(|&c| (0..input.height()).all(|r| input.get(r, c) == Some('.')))
             .collect::<Vec<_>>();
         empty_rows.sort_unstable();
         empty_cols.sort_unstable();
