@@ -1,20 +1,14 @@
 use crate::{day::Day, util::LineGrid};
 
-fn is_mirror<I: Iterator<Item = (char, char)>>(zip: I, smudge: usize) -> bool {
-    let mut eq = zip.filter(|(c1, c2)| c1 != c2);
-    (smudge == 0 || eq.nth(smudge - 1).is_some()) && eq.next().is_none()
-}
-
 fn find_mirror<I: Iterator<Item = char>, F: Fn(usize) -> I>(
     span: usize,
     iter: F,
     smudge: usize,
 ) -> Option<usize> {
     (1..span).find(|&i| {
-        is_mirror(
-            (0..i.min(span - i)).flat_map(|j| iter(i + j).zip(iter(i - j - 1))),
-            smudge,
-        )
+        let zip = (0..i.min(span - i)).flat_map(|j| iter(i + j).zip(iter(i - j - 1)));
+        let mut neq = zip.filter(|(c1, c2)| c1 != c2);
+        (smudge == 0 || neq.nth(smudge - 1).is_some()) && neq.next().is_none()
     })
 }
 
