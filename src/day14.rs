@@ -6,7 +6,7 @@ const STEPS: usize = 1000000000;
 
 enum State {
     Searching,
-    Eating(usize, usize, usize),
+    Eating(usize, usize),
 }
 
 fn push_round<F: Fn(usize) -> (usize, usize)>(len: usize, idx: F, grid: &mut [Vec<u8>]) {
@@ -15,16 +15,16 @@ fn push_round<F: Fn(usize) -> (usize, usize)>(len: usize, idx: F, grid: &mut [Ve
     loop {
         let ch = (cursor < len).then(|| &mut grid[idx(cursor).0][idx(cursor).1]);
         state = match (state, ch) {
-            (State::Eating(s, e, n), None | Some(b'#')) => {
-                (s..=e).for_each(|i| grid[idx(i).0][idx(i).1] = b'.');
+            (State::Eating(s, n), None | Some(b'#')) => {
+                (s..cursor).for_each(|i| grid[idx(i).0][idx(i).1] = b'.');
                 (cursor - n..cursor).for_each(|i| grid[idx(i).0][idx(i).1] = b'O');
                 State::Searching
             }
             (_, None) => break,
-            (State::Searching, Some(b'O')) => State::Eating(cursor, cursor, 1),
+            (State::Searching, Some(b'O')) => State::Eating(cursor, 1),
             (State::Searching, _) => State::Searching,
-            (State::Eating(s, _, n), Some(b'O')) => State::Eating(s, cursor, n + 1),
-            (State::Eating(s, _, n), Some(b'.')) => State::Eating(s, cursor, n),
+            (State::Eating(s, n), Some(b'O')) => State::Eating(s, n + 1),
+            (State::Eating(s, n), Some(b'.')) => State::Eating(s, n),
             _ => panic!("unexpected character"),
         };
         cursor += 1;
