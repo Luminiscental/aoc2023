@@ -20,14 +20,18 @@ impl<'a> LineGrid<'a> {
         }
     }
 
+    pub fn in_bounds(&self, row: i32, col: i32) -> bool {
+        let (w, h) = (self.width() as i32, self.height() as i32);
+        row >= 0 && col >= 0 && row < h && col < w
+    }
+
     pub fn get(&self, row: usize, col: usize) -> Option<char> {
         (row < self.height() && col < self.width()).then(|| self.lines[row][col] as char)
     }
 
     pub fn try_get(&self, row: i32, col: i32) -> Option<char> {
-        let (w, h) = (self.width() as i32, self.height() as i32);
         let (r, c) = (row as usize, col as usize);
-        (row >= 0 && col >= 0 && row < h && col < w).then(|| self.lines[r][c] as char)
+        self.in_bounds(row, col).then(|| self.lines[r][c] as char)
     }
 
     pub fn width(&self) -> usize {
