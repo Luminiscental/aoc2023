@@ -4,30 +4,19 @@ use crate::day::Day;
 
 const STEPS: usize = 1000000000;
 
-enum State {
-    Searching,
-    Eating(usize, usize),
-}
-
 fn push_round<F: Fn(usize) -> (usize, usize)>(len: usize, idx: F, grid: &mut [Vec<u8>]) {
-    let mut state = State::Searching;
-    let mut cursor = 0;
-    loop {
-        let ch = (cursor < len).then(|| &mut grid[idx(cursor).0][idx(cursor).1]);
-        state = match (state, ch) {
-            (State::Eating(s, n), None | Some(b'#')) => {
-                (s..cursor).for_each(|i| grid[idx(i).0][idx(i).1] = b'.');
-                (cursor - n..cursor).for_each(|i| grid[idx(i).0][idx(i).1] = b'O');
-                State::Searching
-            }
-            (_, None) => break,
-            (State::Searching, Some(b'O')) => State::Eating(cursor, 1),
-            (State::Searching, _) => State::Searching,
-            (State::Eating(s, n), Some(b'O')) => State::Eating(s, n + 1),
-            (State::Eating(s, n), Some(b'.')) => State::Eating(s, n),
-            _ => panic!("unexpected character"),
-        };
-        cursor += 1;
+    let mut eaten = 0;
+    for i in 0..len {
+        if grid[idx(i).0][idx(i).1] == b'O' {
+            grid[idx(i).0][idx(i).1] = b'.';
+            eaten += 1;
+        } else if grid[idx(i).0][idx(i).1] == b'#' && eaten > 0 {
+            (i - eaten..i).for_each(|j| grid[idx(j).0][idx(j).1] = b'O');
+            eaten = 0;
+        }
+    }
+    if eaten > 0 {
+        (len - eaten..len).for_each(|j| grid[idx(j).0][idx(j).1] = b'O');
     }
 }
 
