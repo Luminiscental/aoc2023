@@ -1,47 +1,33 @@
-use std::{
-    cmp::Reverse,
-    collections::{BinaryHeap, HashMap},
-};
+use std::{cmp::Reverse, collections::BinaryHeap};
 
 use crate::day::Day;
 
-#[derive(Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
-struct State {
-    pos: (i32, i32),
-    dir: (i32, i32),
-    straight: u32,
-}
-
-fn min_heat(grid: &[Vec<u32>], ultra: bool) -> Option<u32> {
+fn min_heat(grid: &[Vec<i32>], min: i32, max: i32) -> Option<i32> {
     let (width, height) = (grid[0].len() as i32, grid.len() as i32);
-    let get_heat = |pos: (i32, i32)| {
-        (pos.0 >= 0 && pos.1 >= 0 && pos.0 < height && pos.1 < width)
-            .then(|| grid[pos.0 as usize][pos.1 as usize])
-    };
-    let (mut heap, mut seen) = (BinaryHeap::new(), HashMap::new());
-    heap.push((Reverse(0), State::default()));
-    seen.insert(State::default(), 0);
-    while let Some((Reverse(heat), s)) = heap.pop() {
-        if seen.get(&s).map_or(false, |&h| h > heat) {
+    let mut heap = BinaryHeap::new();
+    let mut seen = vec![vec![[None; 2]; width as usize]; height as usize];
+    heap.push((Reverse(0), (0, 0, 0)));
+    heap.push((Reverse(0), (0, 0, 1)));
+    seen[0][0] = [Some(0), Some(0)];
+    while let Some((Reverse(heat), (r, c, d))) = heap.pop() {
+        if seen[r as usize][c as usize][d as usize].map_or(false, |h| h > heat) {
             continue;
         }
-        if s.pos == (height - 1, width - 1) {
+        if (r, c) == (height - 1, width - 1) {
             return Some(heat);
         }
-        let turns = [s.dir, (-s.dir.1, s.dir.0), (s.dir.1, -s.dir.0)];
-        let starts = [(1, 0), (0, 1)];
-        let dirs: &[(i32, i32)] = if s.dir == (0, 0) { &starts } else { &turns };
-        for &dir in dirs {
-            let straight = (s.straight + 1) * (dir == s.dir) as u32;
-            let pos = (s.pos.0 + dir.0, s.pos.1 + dir.1);
-            let ns = State { pos, dir, straight };
-            let can_turn = !ultra || s.dir == (0, 0) || s.straight >= 3;
-            let max = if ultra { 10 } else { 3 };
-            let permissible = ns.straight < max && (dir == s.dir || can_turn);
-            if let Some(h) = permissible.then(|| get_heat(ns.pos)).flatten() {
-                if seen.get(&ns).map_or(true, |&old_h| old_h > heat + h) {
-                    heap.push((Reverse(heat + h), ns));
-                    seen.insert(ns, heat + h);
+        for (dr, dc) in [(d, 1 - d), (-d, d - 1)] {
+            let mut nh = heat;
+            for (n, r, c) in (1..max + 1)
+                .map(|n| (n, r + n * dr, c + n * dc))
+                .take_while(|&(_, r, c)| r >= 0 && c >= 0 && r < height && c < width)
+            {
+                nh += grid[r as usize][c as usize];
+                if n >= min
+                    && seen[r as usize][c as usize][1 - d as usize].map_or(true, |oh| oh > nh)
+                {
+                    heap.push((Reverse(nh), (r, c, 1 - d)));
+                    seen[r as usize][c as usize][1 - d as usize] = Some(nh);
                 }
             }
         }
@@ -54,24 +40,24 @@ pub struct Day17;
 impl<'a> Day<'a> for Day17 {
     const DAY: usize = 17;
 
-    type Input = Vec<Vec<u32>>;
-    type ProcessedInput = Vec<Vec<u32>>;
+    type Input = Vec<Vec<i32>>;
+    type ProcessedInput = Vec<Vec<i32>>;
 
     fn parse(input: &'a str) -> Self::Input {
         input
             .trim()
             .lines()
-            .map(|line| line.bytes().map(|b| (b - b'0') as u32).collect())
+            .map(|line| line.bytes().map(|b| (b - b'0') as i32).collect())
             .collect()
     }
 
     fn solve_part1(input: Self::Input) -> (Self::ProcessedInput, String) {
-        let ans = min_heat(&input, false).unwrap();
+        let ans = min_heat(&input, 1, 3).unwrap();
         (input, ans.to_string())
     }
 
     fn solve_part2(input: Self::ProcessedInput) -> String {
-        min_heat(&input, true).unwrap().to_string()
+        min_heat(&input, 4, 10).unwrap().to_string()
     }
 }
 
