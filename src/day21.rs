@@ -10,6 +10,7 @@ fn frontier(grid: &LineGrid<'_>, limit: usize, tile: bool) -> usize {
     let mut seen = [HashSet::new(), HashSet::new()];
     let mut queue = VecDeque::new();
     queue.push_back((0, start));
+    seen[0].insert(start);
     while let Some((steps, pos)) = queue.pop_front() {
         if steps >= limit {
             break;
