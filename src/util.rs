@@ -2,6 +2,14 @@ use std::ops::Range;
 
 use itertools::Itertools;
 
+pub trait Ignore {
+    fn ignore(self);
+}
+
+impl<T> Ignore for T {
+    fn ignore(self) {}
+}
+
 pub struct LineGrid<'a> {
     lines: Vec<&'a [u8]>,
     width: usize,
